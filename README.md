@@ -30,4 +30,5 @@ If you intend to use this guide from the start to finish, I do recommend the fol
 - NGINX Administration
 - AWS - DevOps Engineer
 - AWS - SysOp Administrator
+- More to follow TBD
 
