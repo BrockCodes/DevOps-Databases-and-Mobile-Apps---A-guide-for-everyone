@@ -1,0 +1,31 @@
+To create user privilege access using MongoDB GraphQL API in a react.native app, you can follow these steps:
+
+Define the user roles and permissions in the MongoDB Atlas cluster.
+Define the GraphQL schema for the app with the required fields and types.
+Use the apollo-link-context package to set the authorization token in the headers for each GraphQL request.
+Use the react-apollo package to make the GraphQL queries and mutations from the react.native app.
+Implement the logic for each user role and permission in the resolvers of the GraphQL schema.
+Test the user privilege access by logging in with different user roles and performing the permitted actions.
+Here is an example code snippet for setting the authorization token in the headers using apollo-link-context:
+
+import { setContext } from 'apollo-link-context';
+import { ApolloClient } from 'apollo-client';
+import { HttpLink } from 'apollo-link-http';
+
+// Set the authorization token in the headers
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('authToken');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    },
+  };
+});
+
+// Create the Apollo client with the HttpLink and authLink
+const client = new ApolloClient({
+  link: authLink.concat(new HttpLink({ uri: 'https://your-api-url/graphql' })),
+  cache: new InMemoryCache(),
+});
+Note that this is just an example and you will need to customize it according to your app’s requirements.
