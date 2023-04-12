@@ -1,0 +1,109 @@
+
+Quicksort is an efficient sorting algorithm with an average time complexity of O(n log n). When implemented correctly, it can be faster than other popular sorting algorithms such as mergesort or heapsort.
+
+In the context of React Native, you might use Quicksort to sort an array of data before displaying it in a component. Here's an example implementation of Quicksort in JavaScript:
+
+function quicksort(arr) {
+  if (arr.length <= 1) {
+    return arr;
+  }
+  
+  const pivot = arr[arr.length - 1];
+  const leftArr = [];
+  const rightArr = [];
+  
+  for (let i = 0; i < arr.length - 1; i++) {
+    if (arr[i] < pivot) {
+      leftArr.push(arr[i]);
+    } else {
+      rightArr.push(arr[i]);
+    }
+  }
+  
+  return [...quicksort(leftArr), pivot, ...quicksort(rightArr)];
+}
+
+In this implementation, we define a `quicksort` function that takes an array `arr` as its input. If the length of the array is 1 or less, we simply return the array (as it is already sorted).
+
+Otherwise, we choose a pivot value (in this case, we simply use the last element in the array), and create two new arrays `leftArr` and `rightArr`.
+
+We then iterate over the input array using a for loop, and for each element, we compare it to the pivot value. If the element is less than the pivot, we push it to the `leftArr`, otherwise we push it to the `rightArr`.
+
+Finally, we return the result of recursively calling `quicksort` on the `leftArr` and `rightArr`, with the pivot value sandwiched between them.
+
+Here's an example usage of the `quicksort` function in a React Native component:
+
+import React from 'react';
+import { Text } from 'react-native';
+
+function SortedList({ data }) {
+  const sortedData = quicksort(data);
+  
+  return (
+    <>
+      {sortedData.map((item) => (
+        <Text key={item}>{item}</Text>
+      ))}
+    </>
+  );
+}
+
+In this component, we pass in an array of `data` as a prop. We then use the `quicksort` function to sort the data, and render a `Text` component for each item in the sorted array.
+
+Now, in full practice:
+We will make it sort a list like: 1, 2, 2, 5, 6, 9, 3, 2, 6, 5, and generate the output. There are multiple ways you can rewrite this, but it'll come out the same.
+
+- Choose a pivot element, say 5
+- Partition the list into two sub-lists: one with elements smaller than the pivot (i.e., [1, 2, 2, 3, 2]) and one with elements greater than the pivot (i.e., [5, 6, 9, 6, 5])
+- Recursively apply steps 1-2 to the sub-lists until they are of size 0 or 1.
+- Here's an example of how you can implement quicksort in React Native to sort an array of numbers:
+
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, Button } from 'react-native';
+
+export default function App() {
+  const [numbers, setNumbers] = useState([1, 2, 2, 5, 6, 9, 3, 2, 6, 5]);
+
+  const quickSort = (arr) => {
+    if (arr.length <= 1) return arr;
+    const pivot = arr[arr.length - 1];
+    const left = [];
+    const right = [];
+    for (let i = 0; i < arr.length - 1; i++) {
+      if (arr[i] < pivot) {
+        left.push(arr[i]);
+      } else {
+        right.push(arr[i]);
+      }
+    }
+    return [...quickSort(left), pivot, ...quickSort(right)];
+  };
+
+  const sortNumbers = () => {
+    const sortedNumbers = quickSort(numbers);
+    setNumbers(sortedNumbers);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text>Unsorted Numbers: {numbers.join(', ')}</Text>
+      <Button title="Sort Numbers" onPress={sortNumbers} />
+      <Text>Sorted Numbers: {numbers.join(', ')}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+
+This will output:
+
+Unsorted Numbers: 1, 2, 2, 5, 6, 9, 3, 2, 6, 5
+Sorted Numbers: 1, 2, 2, 2, 3, 5, 5, 6, 6, 9
+
+The time complexity of quicksort is O(n log n) on average, and O(n^2) in the worst case.
