@@ -44,8 +44,357 @@ Here are the steps to set up and use `react-native-video` and `react-native-vr-p
    }
    ```
 
+Example of a simple mobile UI for a video player using React Native:
+
+```
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import Video from 'react-native-video';
+
+const App = () => {
+  const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(false);
+
+  return (
+    <View style={styles.container}>
+      <Video
+        source={{ uri: 'https://example.com/video.mp4' }}
+        style={styles.videoPlayer}
+        paused={paused}
+        muted={muted}
+      />
+      <TouchableOpacity style={styles.playButton} onPress={() => setPaused(!paused)}>
+        <Text style={styles.buttonText}>{paused ? 'Play' : 'Pause'}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.muteButton} onPress={() => setMuted(!muted)}>
+        <Text style={styles.buttonText}>{muted ? 'Unmute' : 'Mute'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  videoPlayer: {
+    width: '100%',
+    height: '100%',
+  },
+  playButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    padding: 10,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    borderRadius: 10,
+  },
+  muteButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    padding: 10,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
+
+export default App;
+```
+
+This code creates a basic video player with Play and Mute buttons that toggle the paused and muted states of the video player component. You can customize the UI further by adding more buttons or controls as needed.
+
 5. You can customize the video player's UI by passing `VrPlayer` component's props, such as `seekable`, `duration`, `playableDuration`, `onPlayPauseToggle`, `onSeek`, `onEnd`, etc.
 
 6. Finally, you can run your app on an Android or iOS device or emulator to see the 360-degree video player in action.
 
 Note: You may need to install additional dependencies, such as `react-native-webgl` or `react-native-gl-model-view`, depending on the requirements of `react-native-vr-player`. Also, make sure that your video is in the correct format and encoding for 360-degree playback.
+
+Connecting the video player to the UI.
+
+To connect the VRPlayer component to the UI, we need to add a ref to the VRPlayer component and then pass that ref to the VideoPlayer component as a prop. We can then call the methods of the VRPlayer component from the VideoPlayer component to control the playback of the VR video.
+
+Here's an example of how we can do this:
+
+```
+import React, { useRef } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { VRPlayer } from 'vrplayer';
+import VideoPlayer from './VideoPlayer';
+
+const App = () => {
+  const vrPlayerRef = useRef();
+
+  const onPlayPause = () => {
+    if (vrPlayerRef.current) {
+      if (vrPlayerRef.current.isPlaying()) {
+        vrPlayerRef.current.pause();
+      } else {
+        vrPlayerRef.current.play();
+      }
+    }
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <VRPlayer ref={vrPlayerRef} source={{ uri: 'https://example.com/vr-video.mp4' }} />
+      <VideoPlayer onPlayPause={onPlayPause} />
+    </View>
+  );
+};
+
+export default App;
+```
+
+In this example, we create a `vrPlayerRef` using the `useRef` hook and pass it as a `ref` prop to the `VRPlayer` component. We also define an `onPlayPause` function that calls the `play` and `pause` methods of the VRPlayer component depending on its current state.
+
+The `onPlayPause` function is passed as a prop to the `VideoPlayer` component, which is responsible for rendering the UI for the video player controls. The `VideoPlayer` component can then call the `onPlayPause` function when the play/pause button is pressed, which in turn controls the playback of the VR video through the VRPlayer component.
+
+// Add the movie repositories
+To connect a React Native app to a MongoDB Atlas database and an Amazon S3 bucket with videos, you can use the following steps:
+
+1. Install the necessary packages: 
+
+```
+npm install mongoose aws-sdk
+```
+
+2. Set up a connection to your MongoDB Atlas database:
+
+```javascript
+import mongoose from 'mongoose';
+
+// Connect to your MongoDB Atlas database
+mongoose.connect('mongodb+srv://<username>:<password>@<cluster-url>/<database>?retryWrites=true&w=majority', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+// Create a schema for your videos
+const videoSchema = new mongoose.Schema({
+  title: String,
+  url: String
+});
+
+// Create a model for your videos
+const Video = mongoose.model('Video', videoSchema);
+```
+
+Replace `<username>`, `<password>`, `<cluster-url>`, and `<database>` with your MongoDB Atlas credentials.
+
+3. Set up a connection to your Amazon S3 bucket:
+
+```javascript
+import AWS from 'aws-sdk';
+
+// Configure the AWS SDK
+AWS.config.update({
+  region: '<region>',
+  accessKeyId: '<access-key>',
+  secretAccessKey: '<secret-access-key>'
+});
+
+// Create an S3 object
+const s3 = new AWS.S3({
+  apiVersion: '2006-03-01',
+  params: { Bucket: '<bucket-name>' }
+});
+```
+
+Replace `<region>`, `<access-key>`, `<secret-access-key>`, and `<bucket-name>` with your Amazon S3 credentials.
+
+4. Use the Video model to retrieve the list of videos from your MongoDB Atlas database and display them in your React Native app. You can use a library like `react-native-video` to play the videos:
+
+```javascript
+import React, { useEffect, useState } from 'react';
+import { FlatList, Text, View } from 'react-native';
+import Video from 'react-native-video';
+
+export default function App() {
+  const [videos, setVideos] = useState([]);
+
+  useEffect(() => {
+    // Retrieve the list of videos from your MongoDB Atlas database
+    Video.find((error, videos) => {
+      if (error) {
+        console.log(error);
+      } else {
+        setVideos(videos);
+      }
+    });
+  }, []);
+
+  return (
+    <View>
+      <FlatList
+        data={videos}
+        keyExtractor={video => video._id}
+        renderItem={({ item }) => (
+          <View>
+            <Text>{item.title}</Text>
+            <Video source={{ uri: s3.getSignedUrl('getObject', { Key: item.url }) }} />
+          </View>
+        )}
+      />
+    </View>
+  );
+}
+```
+
+// This code retrieves the list of videos from your MongoDB Atlas database and displays them in a `FlatList`. Each video is displayed with its title and a `Video` component from `react-native-video`. The video is played using a signed URL from your Amazon S3 bucket.
+
+// Note that this is a simplified example and you may need to customize it for your specific use case.
+
+Adding movie sorting functionalities:
+
+To sort movies by type from the app, you can follow these steps:
+
+1. Retrieve the list of movies from the MongoDB Atlas database.
+
+2. Create a UI element to allow the user to select a movie type. This can be done using a drop-down list or a set of buttons.
+
+3. When the user selects a movie type, use a filter function to retrieve only the movies of that type from the list.
+
+4. Display the filtered list of movies in the UI.
+
+Here is some sample code that demonstrates how to retrieve movies from MongoDB Atlas and filter them by type:
+
+```javascript
+import React, { useState, useEffect } from 'react';
+import { MongoClient } from 'mongodb';
+
+function MovieList() {
+  const [movies, setMovies] = useState([]);
+  const [selectedType, setSelectedType] = useState('');
+
+  useEffect(() => {
+    async function fetchMovies() {
+      const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+      await client.connect();
+      const db = client.db(process.env.MONGODB_DB);
+      const collection = db.collection('movies');
+      const movieData = await collection.find().toArray();
+      setMovies(movieData);
+      await client.close();
+    }
+    fetchMovies();
+  }, []);
+
+  function handleTypeSelect(type) {
+    setSelectedType(type);
+  }
+
+  const filteredMovies = selectedType ? movies.filter(movie => movie.type === selectedType) : movies;
+
+  return (
+    <div>
+      <div>
+        <button onClick={() => handleTypeSelect('Action')}>Action</button>
+        <button onClick={() => handleTypeSelect('Comedy')}>Comedy</button>
+        <button onClick={() => handleTypeSelect('Drama')}>Drama</button>
+      </div>
+      <ul>
+        {filteredMovies.map(movie => (
+          <li key={movie._id}>{movie.title}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default MovieList;
+```
+
+In this example, we first retrieve the list of movies from MongoDB Atlas using the `useEffect` hook. We then create a set of buttons that allow the user to select a movie type. When a button is clicked, we call the `handleTypeSelect` function and pass in the corresponding movie type. This function sets the `selectedType` state variable to the selected type.
+
+We then use the `filter` method to create a new array of movies that match the selected type. If no type is selected, we simply display the full list of movies.
+
+Finally, we render the filtered list of movies in the UI using a simple `<ul>` element.
+
+Download videos
+To download a video from the movie app to the device, you can use the `react-native-fs` library which provides access to the device's file system. Here is a sample code to download a video file from a given URL to the device's local storage:
+
+```
+import RNFS from 'react-native-fs';
+
+const downloadVideo = async (url, fileName) => {
+  const downloadDest = `${RNFS.DocumentDirectoryPath}/${fileName}`;
+
+  try {
+    const result = await RNFS.downloadFile({
+      fromUrl: url,
+      toFile: downloadDest,
+      background: true,
+      discretionary: true,
+    });
+
+    if (result.statusCode === 200) {
+      console.log('Video downloaded successfully!');
+    }
+  } catch (err) {
+    console.log('Error while downloading video: ', err);
+  }
+};
+```
+
+You can call this function when the user taps on a download button or some similar action.
+
+Note that the `background` and `discretionary` options allow the download to continue even if the app is put into the background or the device goes to sleep. This is useful for larger files that may take longer to download. However, it is recommended to use these options only for larger files and not for smaller files as it may impact the device's battery life.
+
+Upload videos to the movie app.
+
+To allow users to upload movies to the video app, you can implement a simple API endpoint that accepts video files and stores them in an S3 bucket in Amazon Web Services (AWS). Here's a brief overview of how you can achieve this:
+
+1. Create an S3 bucket in AWS to store the uploaded videos. You can do this using the AWS Management Console or the AWS CLI.
+
+2. Create an IAM user in AWS with permissions to upload objects to the S3 bucket. The user should have a policy that allows it to perform the `s3:PutObject` action on the target bucket.
+
+3. Implement an API endpoint in your app that accepts video files. You can use a Node.js backend with Express.js to create the API endpoint. Here's an example code snippet that shows how to implement a simple API endpoint that accepts video files:
+
+```
+const AWS = require('aws-sdk');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+
+// Configure AWS SDK with your access keys
+AWS.config.update({
+  accessKeyId: '<your-access-key>',
+  secretAccessKey: '<your-secret-key>'
+});
+
+// Create an S3 instance
+const s3 = new AWS.S3();
+
+// Configure multer to use the S3 storage engine
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: '<your-bucket-name>',
+    acl: 'public-read',
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    key: function(req, file, cb) {
+      cb(null, 'videos/' + Date.now() + '-' + file.originalname);
+    }
+  })
+});
+
+// Define a route to handle video uploads
+app.post('/videos', upload.single('video'), (req, res, next) => {
+  const fileUrl = req.file.location;
+  res.json({ url: fileUrl });
+});
+```
+
+This code snippet uses the `multer` middleware to handle the file upload, and the `multer-s3` plugin to store the file in the S3 bucket. The uploaded file is given a unique key based on the timestamp and original filename, and the resulting S3 URL is returned in the API response.
+
+4. Integrate the API endpoint with your app's frontend. You can use a form or a file picker to allow users to select and upload video files, and then make a POST request to the API endpoint with the selected file.
+
+With these steps, you should be able to allow users to upload movies to your video app and store them in an S3 bucket.
