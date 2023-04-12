@@ -1,0 +1,100 @@
+FOR GITHUB
+
+To connect GitHub to MongoDB Atlas Data API, you can use GitHub Actions to automate the deployment of your code changes to Atlas. Here are the general steps to set up the integration:
+
+Create a new GitHub account if you don’t already have one.
+
+Create a new GitHub repository for your MongoDB Atlas Data API project.
+
+Create a GitHub Actions workflow file in the root directory of your GitHub repository. This file should contain the necessary build and deployment steps for your MongoDB Atlas Data API. Here’s an example configuration file that deploys a Node.js application to Atlas Data API:
+
+name: Deploy to MongoDB Atlas Data API
+'''
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Deploy to Atlas Data API
+        run: |
+          curl --request PATCH \
+            --url https://realm.mongodb.com/api/admin/v3.0/groups/${{ secrets.ATLAS_GROUP_ID }}/clusters/${{ secrets.ATLAS_CLUSTER_NAME }}/dataSources/${{ secrets.ATLAS_DATA_SOURCE_NAME }} \
+            --header 'Content-Type: application/json' \
+            --header 'Accept: application/json' \
+            --header "Authorization: Bearer ${{ secrets.ATLAS_API_KEY }}" \
+            --data '{"status":"IDLE"}'
+'''
+Add the necessary environment variables to your GitHub repository by navigating to the “Settings” page and selecting the “Secrets” tab. You’ll need to add the following variables:
+
+ATLAS_GROUP_ID: the ID of your MongoDB Atlas project group
+ATLAS_CLUSTER_NAME: the name of your MongoDB Atlas cluster
+ATLAS_DATA_SOURCE_NAME: the name of your MongoDB Atlas data source
+ATLAS_API_KEY: an API key with permissions to deploy to your MongoDB Atlas Data API project
+You can find your Atlas group ID, cluster name, data source name, and API key in the “Settings” tab of your MongoDB Atlas project.
+
+Commit and push your GitHub Actions workflow file to your GitHub repository.
+
+Trigger a workflow in GitHub by pushing a new commit to your repository. GitHub Actions will execute the build and deployment steps defined in your workflow file and deploy your app to MongoDB Atlas Data API.
+
+By following these steps, you can connect GitHub to MongoDB Atlas Data API and automate the deployment of your app changes to Atlas.
+
+FOR GITLAB
+
+To connect GitLab to MongoDB Atlas Data API, you can use GitLab CI/CD to automate the deployment of your code changes to Atlas. Here are the general steps to set up the integration:
+
+Create a new GitLab account if you don’t already have one.
+
+Create a new GitLab project for your MongoDB Atlas Data API project.
+
+Create a GitLab CI/CD pipeline configuration file in the root directory of your GitLab project. This file should contain the necessary build and deployment steps for your MongoDB Atlas Data API. Here’s an example configuration file that deploys a Node.js application to Atlas Data API:
+
+'''
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - npm install
+
+deploy:
+  stage: deploy
+  script:
+    - curl --request PATCH \
+      --url https://realm.mongodb.com/api/admin/v3.0/groups/${ATLAS_GROUP_ID}/clusters/${ATLAS_CLUSTER_NAME}/dataSources/${ATLAS_DATA_SOURCE_NAME} \
+      --header 'Content-Type: application/json' \
+      --header 'Accept: application/json' \
+      --header "Authorization: Bearer ${ATLAS_API_KEY}" \
+      --data '{"status":"IDLE"}'
+  environment:
+    name: production
+  only:
+    - main
+'''
+
+Add the necessary environment variables to your GitLab project by navigating to the “Settings” page and selecting the “CI/CD” tab. You’ll need to add the following variables:
+
+ATLAS_GROUP_ID: the ID of your MongoDB Atlas project group
+ATLAS_CLUSTER_NAME: the name of your MongoDB Atlas cluster
+ATLAS_DATA_SOURCE_NAME: the name of your MongoDB Atlas data source
+ATLAS_API_KEY: an API key with permissions to deploy to your MongoDB Atlas Data API project
+You can find your Atlas group ID, cluster name, data source name, and API key in the “Settings” tab of your MongoDB Atlas project.
+
+Commit and push your GitLab CI/CD pipeline configuration file to your GitLab repository.
+
+Trigger a pipeline in GitLab by pushing a new commit to your repository. GitLab CI/CD will execute the build and deployment steps defined in your pipeline configuration file and deploy your app to MongoDB Atlas Data API.
+
+By following these steps, you can connect GitLab to MongoDB Atlas Data API and automate the deployment of your app changes to Atlas.
