@@ -1,0 +1,51 @@
+To play 360-degree videos in a React Native app, you can use the `react-native-video` library along with a 360-degree video player, such as `react-native-vr-player`.
+
+Here are the steps to set up and use `react-native-video` and `react-native-vr-player` in your React Native app:
+
+1. Install `react-native-video` and `react-native-vr-player` libraries in your project using npm:
+
+   ```
+   npm install react-native-video react-native-vr-player --save
+   ```
+
+2. Link the libraries by running the following command:
+
+   ```
+   react-native link react-native-video react-native-vr-player
+   ```
+
+3. Import the `Video` component from `react-native-video` and `VrPlayer` component from `react-native-vr-player` in your component file:
+
+   ```javascript
+   import React from 'react';
+   import { View } from 'react-native';
+   import Video from 'react-native-video';
+   import { VrPlayer } from 'react-native-vr-player';
+   ```
+
+4. In your component's render method, create a container `View` component and add `Video` and `VrPlayer` components inside it. You can set the `source` prop of `Video` to your 360-degree video URL, and the `src` prop of `VrPlayer` to the same URL:
+
+   ```javascript
+   render() {
+     return (
+       <View style={{ flex: 1 }}>
+         <Video
+           source={{ uri: 'your-360-video-url' }}
+           style={{ height: 200 }}
+           resizeMode="contain"
+           repeat={true}
+         />
+         <VrPlayer
+           src="your-360-video-url"
+           style={{ height: 400 }}
+         />
+       </View>
+     );
+   }
+   ```
+
+5. You can customize the video player's UI by passing `VrPlayer` component's props, such as `seekable`, `duration`, `playableDuration`, `onPlayPauseToggle`, `onSeek`, `onEnd`, etc.
+
+6. Finally, you can run your app on an Android or iOS device or emulator to see the 360-degree video player in action.
+
+Note: You may need to install additional dependencies, such as `react-native-webgl` or `react-native-gl-model-view`, depending on the requirements of `react-native-vr-player`. Also, make sure that your video is in the correct format and encoding for 360-degree playback.
