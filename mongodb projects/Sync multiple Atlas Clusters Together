@@ -1,0 +1,126 @@
+To connect two MongoDB Atlas clusters together with GraphQL, you can create a new GraphQL service in MongoDB Atlas that serves as a gateway between the two clusters. Here are the general steps to set up the integration:
+
+Create two MongoDB Atlas clusters, one for each of the data sources you want to connect.
+
+Create a new GraphQL service in one of the clusters. You can do this by navigating to the “GraphQL” tab in the cluster settings and clicking the “Create Service” button.
+
+Configure the GraphQL service to use the appropriate schema for the data source it’s connected to. You can either use an existing schema or create a new one using tools like Apollo Studio or the GraphQL Playground.
+
+Connect the GraphQL service to the appropriate MongoDB Atlas cluster. You can do this by navigating to the “Settings” tab in the GraphQL service settings and selecting the “Data Sources” tab. From there, you can connect the service to the appropriate cluster by providing the necessary connection details, such as the cluster URI, username, and password.
+
+Create a new GraphQL resolver that queries the second MongoDB Atlas cluster. You can do this by adding a new resolver to your GraphQL schema and using the MongoDB Stitch SDK to query the second cluster. Here’s an example resolver that queries a collection in the second cluster:
+
+const { Stitch, RemoteMongoClient } = require('mongodb-stitch-browser-sdk');
+
+exports.resolver = async ({ args, context }) => {
+  const { database, collection } = args;
+  const { clusterUrl, dbName } = context.services.get('second-atlas').dataSources.mongodb;
+  
+  const stitchClient = Stitch.initializeDefaultAppClient('your-stitch-app-id');
+  const mongoClient = stitchClient.getServiceClient(RemoteMongoClient.factory, clusterUrl);
+  const db = mongoClient.db(dbName);
+  const coll = db.collection(collection);
+  
+  const result = await coll.find({}).toArray();
+  
+  return result;
+};
+Connect the GraphQL resolver to the second MongoDB Atlas cluster. You can do this by adding a new data source to your GraphQL service and providing the necessary connection details, such as the cluster URI, username, and password.
+
+Test your GraphQL service by executing a query that retrieves data from both MongoDB Atlas clusters. If everything is set up correctly, you should be able to retrieve data from both clusters using a single GraphQL query.
+
+By following these steps, you can connect two MongoDB Atlas clusters together with GraphQL and create a unified API that serves data from both sources.
+
+Second is with functions.
+
+Do it with functions
+To connect two MongoDB Atlas clusters together with Atlas Functions, you can create a serverless function that retrieves data from one cluster and writes it to the other. Here are the general steps to set up the integration:
+
+Create two MongoDB Atlas clusters, one for each of the data sources you want to connect.
+
+Create a new serverless function in one of the clusters. You can do this by navigating to the “Functions” tab in the cluster settings and clicking the “Create Function” button.
+
+Write a function that retrieves data from the first MongoDB Atlas cluster and writes it to the second cluster. You can use the MongoDB Node.js driver or any other compatible driver to interact with the clusters. Here’s an example function that retrieves data from a collection in the first cluster and writes it to a collection in the second cluster:
+
+exports = async function(event) {
+  const { uri: fromUri, dbName: fromDbName, collName: fromCollName } = context.values.get('fromCluster');
+  const { uri: toUri, dbName: toDbName, collName: toCollName } = context.values.get('toCluster');
+
+  const fromClient = context.services.get('fromCluster').getClient();
+  const toClient = context.services.get('toCluster').getClient();
+  const fromColl = fromClient.db(fromDbName).collection(fromCollName);
+  const toColl = toClient.db(toDbName).collection(toCollName);
+
+  const data = await fromColl.find().toArray();
+  const result = await toColl.insertMany(data);
+
+  return result.insertedCount;
+};
+Configure the serverless function to use the appropriate connection details for each MongoDB Atlas cluster. You can store the connection details in Atlas Values and reference them in your function code using the context.values object.
+
+Test your serverless function by invoking it manually or scheduling it to run on a regular basis. If everything is set up correctly, you should be able to retrieve data from one MongoDB Atlas cluster and write it to another using a serverless function.
+
+By following these steps, you can connect two MongoDB Atlas clusters together with Atlas Functions and synchronize data between them in near real-time.
+
+Third is the Data API
+
+Using the Atlas Data API
+
+To connect two MongoDB Atlas clusters together with the Atlas Data API, you can use the Data API to read data from one cluster and write it to the other. Here are the general steps to set up the integration:
+
+Create two MongoDB Atlas clusters, one for each of the data sources you want to connect.
+
+Enable the Atlas Data API in both clusters. You can do this by navigating to the “Data API” tab in the cluster settings and enabling the feature.
+
+Create an API key for each cluster. You can do this by navigating to the “Access Manager” tab in the cluster settings and creating a new API key with the appropriate permissions.
+
+Use the Data API to read data from the first MongoDB Atlas cluster and write it to the second cluster. You can use any HTTP client to interact with the Data API, such as the axios library in Node.js or the fetch function in web browsers. Here’s an example code snippet that retrieves data from a collection in the first cluster and writes it to a collection in the second cluster using the Data API:
+
+const axios = require('axios');
+
+const fromApiKey = 'YOUR_FROM_CLUSTER_API_KEY';
+const fromClusterId = 'YOUR_FROM_CLUSTER_ID';
+const fromDbName = 'YOUR_FROM_DB_NAME';
+const fromCollName = 'YOUR_FROM_COLLECTION_NAME';
+
+const toApiKey = 'YOUR_TO_CLUSTER_API_KEY';
+const toClusterId = 'YOUR_TO_CLUSTER_ID';
+const toDbName = 'YOUR_TO_DB_NAME';
+const toCollName = 'YOUR_TO_COLLECTION_NAME';
+
+const apiUrl = `https://data-api.mongodb.com/v2/${fromClusterId}/clusters/${fromClusterId}/`;
+
+async function readFromCluster() {
+  const response = await axios.get(`${apiUrl}databases/${fromDbName}/collections/${fromCollName}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept-Encoding': 'gzip',
+      'MongoDB-Realm-API-Key': fromApiKey,
+    },
+  });
+
+  return response.data;
+}
+
+async function writeToCluster(data) {
+  const response = await axios.post(`${apiUrl}databases/${toDbName}/collections/${toCollName}`, data, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept-Encoding': 'gzip',
+      'MongoDB-Realm-API-Key': toApiKey,
+    },
+  });
+
+  return response.data;
+}
+
+async function syncData() {
+  const data = await readFromCluster();
+  const result = await writeToCluster(data);
+
+  console.log(`Synced ${result.insertedCount} documents`);
+}
+
+syncData();
+Secure your API keys and connection details. You should store your API keys and connection details in a secure location, such as environment variables or a configuration file that is not checked into version control.
+By following these steps, you can connect two MongoDB Atlas clusters together with the Atlas Data API and synchronize data between them in near real-time.
