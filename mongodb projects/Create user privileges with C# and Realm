@@ -1,0 +1,91 @@
+These are not sponsored by MongoDB, these are just common issues people are having getting C# SDK etc. working with Realm for user access and getting them data access.
+
+To build a user login with user access privileges to data using MongoDB Realm and C#, you can follow these general steps:
+
+Create a new MongoDB Realm app and enable user authentication. You can do this by navigating to the “Authentication” tab in the MongoDB Realm dashboard and selecting the appropriate authentication providers for your app.
+
+Define your data models and create your MongoDB collections. You can do this by navigating to the “Data” tab in the MongoDB Realm dashboard and creating your collections and schema.
+
+Create a new C# console application in Visual Studio or another IDE of your choice.
+
+Install the MongoDB.Driver NuGet package in your C# project. You can do this by right-clicking on your project in Visual Studio and selecting “Manage NuGet Packages”.
+
+Connect to your MongoDB Atlas cluster by using the following code:
+'''
+using MongoDB.Driver;
+
+var client = new MongoClient("mongodb+srv://<username>:<password>@<cluster-address>/test?retryWrites=true&w=majority");
+var database = client.GetDatabase("my-db");
+Replace <username>, <password>, <cluster-address>, and my-db with your own values.
+'''
+Implement user authentication in your C# application by using the MongoDB Realm SDK for C#. You can use the MongoDB.Driver.Realm namespace to create a UserCredential object and authenticate your users.
+using MongoDB.Driver.Realm;
+'''
+var app = App.Create("<your-app-id>");
+var emailPasswordCredentials = Credentials.EmailPassword("<email>", "<password>");
+var user = await app.LogInAsync(emailPasswordCredentials);
+'''
+Replace <your-app-id>, <email>, and <password> with your own values.
+
+Define user access privileges to your data collections. You can do this by navigating to the “Data Access” tab in the MongoDB Realm dashboard and creating your rules.
+
+Use the MongoDB.Driver.Realm namespace to access your MongoDB collections and query your data.
+'''
+using MongoDB.Driver.Realm;
+
+var collection = database.GetCollection<YourModel>("your-collection");
+
+var results = await collection.FindAsync(new BsonDocument());
+'''
+Replace YourModel and your-collection with your own values.
+
+Use the results of your queries to display the appropriate data to your users, based on their access privileges.
+By following these steps, you can create a user login with user access privileges to data using MongoDB Realm and C#.
+
+To create role based privileges:
+
+To allow different levels of user privileges after signing in with C# and MongoDB Realm, you can use MongoDB Realm’s data access controls to define access rules based on user roles.
+
+Here are the general steps to implement this functionality:
+
+Define the different roles that users can have in your application, such as “admin”, “editor”, and “viewer”. You can do this by creating a new collection in your MongoDB database and adding documents that define each role.
+
+Create a function in your MongoDB Realm app that returns the user’s role based on their credentials. You can use the context object to access the user’s credentials and query your role collection to determine their role.
+'''
+exports.getRole = function() {
+  const users = context.services.mongodb.db("my-db").collection("users");
+  const user = users.findOne({ email: context.user.data.email });
+  return user.role;
+};
+'''
+Define access rules for your MongoDB collections that restrict access based on the user’s role. You can do this by navigating to the “Data Access” tab in the MongoDB Realm dashboard and creating your rules. For example, you might create a rule that allows “admin” users to read and write all documents in a collection, while “viewer” users can only read documents.
+
+'''
+{
+  "%%read": "role == 'admin'",
+  "%%write": "role == 'admin'",
+  "%%clean": "role == 'admin'",
+  "field": {
+    "%%read": "role == 'viewer'"
+  }
+}
+'''
+In your C# application, retrieve the user’s role using the MongoDB.Driver.Realm namespace and use it to determine their level of access. For example, you might display different menus or UI elements based on the user’s role.
+using MongoDB.Driver.Realm;
+'''
+var app = App.Create("<your-app-id>");
+var emailPasswordCredentials = Credentials.EmailPassword("<email>", "<password>");
+var user = await app.LogInAsync(emailPasswordCredentials);
+
+var role = await user.Functions.CallAsync<string>("getRole");
+
+if (role == "admin") {
+  // display admin menu
+} else {
+  // display user menu
+}
+'''
+By following these steps, you can allow different levels of user privileges after signing in with C# and MongoDB Realm.
+
+
+
