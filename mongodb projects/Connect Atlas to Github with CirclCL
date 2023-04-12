@@ -1,0 +1,58 @@
+To connect your MongoDB Atlas app services to GitHub, you can use MongoDB Atlas’s integration with the popular continuous integration and deployment platform, CircleCI. Here are the general steps to set up the integration:
+
+Create a new CircleCI account if you don’t already have one.
+
+Connect your GitHub account to CircleCI by following the prompts in the CircleCI interface.
+
+Create a new CircleCI project for your MongoDB Atlas app by selecting the “Set Up Project” button and choosing your repository.
+
+Add the necessary environment variables to your CircleCI project by navigating to the “Settings” page and selecting the “Environment Variables” tab. You’ll need to add the following variables:
+
+MONGODB_ATLAS_CLUSTER_NAME: the name of your MongoDB Atlas cluster
+MONGODB_ATLAS_PUBLIC_KEY: your MongoDB Atlas public key
+MONGODB_ATLAS_PRIVATE_KEY: your MongoDB Atlas private key
+You can find your public and private keys in the “Security” tab of your MongoDB Atlas project.
+
+Create a CircleCI configuration file (config.yml) in the root directory of your GitHub repository. This file should contain the necessary build and deployment steps for your MongoDB Atlas app. Here’s an example configuration file that deploys a Node.js application to MongoDB Atlas:
+'''
+version: 2.1
+
+orbs:
+  node: circleci/node@4.6.0
+
+jobs:
+  build:
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - node/install-packages
+      - run: npm install
+      - run: npm run build
+
+  deploy:
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          name: Deploy to MongoDB Atlas
+          command: |
+            ssh -i ./id_rsa <your-ssh-user>@<your-ssh-host> "cd <path-to-app> && git pull && npm install && pm2 restart <app-name>"
+
+workflows:
+  build-and-deploy:
+    jobs:
+      - node/build:
+          name: Build app
+      - node/deploy:
+          name: Deploy app
+          requires:
+            - node/build
+'''
+Commit and push your config.yml file to your GitHub repository.
+
+Trigger a build in CircleCI by selecting the “Run Pipeline” button in your CircleCI project. CircleCI will execute the build and deployment steps defined in your configuration file and deploy your app to MongoDB Atlas.
+
+By following these steps, you can connect your MongoDB Atlas app services to GitHub using CircleCI.
