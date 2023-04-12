@@ -1,0 +1,32 @@
+To connect MongoDB Atlas to GitLab, you can use the GitLab CI/CD platform to automate the deployment of your code changes to Atlas. Here are the general steps to set up the integration:
+
+Create a new GitLab account if you don’t already have one.
+
+Create a new GitLab repository for your MongoDB Atlas app.
+
+Create a .gitlab-ci.yml file in the root directory of your GitLab repository. This file should contain the necessary build and deployment steps for your MongoDB Atlas app. Here’s an example configuration file that deploys a Node.js application to MongoDB Atlas:
+'''
+image: node:latest
+
+before_script:
+  - npm install -g @angular/cli
+  - npm install
+
+deploy:
+  stage: deploy
+  script:
+    - npm run build
+    - ssh -i <path-to-private-key> <your-ssh-user>@<your-ssh-host> "cd <path-to-app> && git pull && npm install && pm2 restart <app-name>"
+'''
+Add the necessary environment variables to your GitLab project by navigating to the “Settings” page and selecting the “CI/CD” tab. You’ll need to add the following variables:
+
+MONGODB_ATLAS_CLUSTER_NAME: the name of your MongoDB Atlas cluster
+MONGODB_ATLAS_PUBLIC_KEY: your MongoDB Atlas public key
+MONGODB_ATLAS_PRIVATE_KEY: your MongoDB Atlas private key
+You can find your public and private keys in the “Security” tab of your MongoDB Atlas project.
+
+Commit and push your .gitlab-ci.yml file to your GitLab repository.
+
+Trigger a pipeline in GitLab by pushing a new commit to your repository. GitLab will execute the build and deployment steps defined in your configuration file and deploy your app to MongoDB Atlas.
+
+By following these steps, you can connect MongoDB Atlas to GitLab and automate the deployment of your app changes to Atlas.
