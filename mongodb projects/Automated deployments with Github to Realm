@@ -1,0 +1,44 @@
+To connect MongoDB Realm to GitHub, you can use GitHub Actions to automate the deployment of your code changes to Realm. Here are the general steps to set up the integration:
+
+Create a new GitHub account if you don’t already have one.
+
+Create a new GitHub repository for your MongoDB Realm app.
+
+Create a GitHub Actions workflow file in the root directory of your GitHub repository. This file should contain the necessary build and deployment steps for your MongoDB Realm app. Here’s an example configuration file that deploys a Node.js application to MongoDB Realm:
+'''
+name: Deploy to MongoDB Realm
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Deploy to Realm
+        uses: mongodb-js/realm-deploy@v1.2
+        with:
+          app_id: ${{ secrets.REALM_APP_ID }}
+          private_key: ${{ secrets.REALM_PRIVATE_KEY }}
+          command: deploy
+'''
+Add the necessary environment variables to your GitHub repository by navigating to the “Settings” page and selecting the “Secrets” tab. You’ll need to add the following variables:
+
+REALM_APP_ID: the ID of your MongoDB Realm app
+REALM_PRIVATE_KEY: the private key associated with your MongoDB Realm app
+You can find your app ID and private key in the “App Settings” tab of your MongoDB Realm project.
+
+Commit and push your GitHub Actions workflow file to your GitHub repository.
+
+Trigger a workflow in GitHub by pushing a new commit to your repository. GitHub Actions will execute the build and deployment steps defined in your workflow file and deploy your app to MongoDB Realm.
+
+By following these steps, you can connect GitHub to MongoDB Realm and automate the deployment of your app changes to Realm.
