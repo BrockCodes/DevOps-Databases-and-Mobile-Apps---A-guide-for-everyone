@@ -1,0 +1,85 @@
+To connect MongoDB Atlas GraphQL with a React Native mobile app, you can use the Apollo GraphQL client library. Here are the high-level steps:
+
+Install the required dependencies:
+
+@apollo/client package for making GraphQL requests
+subscriptions-transport-ws package for handling WebSocket subscriptions
+graphql-tag package for parsing GraphQL queries
+Create an Apollo client instance and configure it with the necessary settings, including the GraphQL API endpoint and authorization credentials.
+
+Use the useQuery and useMutation hooks from the @apollo/client package to query and mutate data in the GraphQL API.
+
+Optionally, use the useSubscription hook from the subscriptions-transport-ws package to subscribe to real-time updates from the GraphQL API.
+
+Here’s some sample code that shows how to create an Apollo client instance and use it to fetch data from a MongoDB Atlas GraphQL API:
+
+import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { getMainDefinition } from '@apollo/client/utilities';
+
+// Set up the HTTP link for GraphQL queries and mutations
+const httpLink = new HttpLink({
+  uri: 'https://<YOUR_API_ENDPOINT>',
+  headers: {
+    Authorization: `Bearer ${<YOUR_AUTH_TOKEN>}`,
+  },
+});
+
+// Set up the WebSocket link for GraphQL subscriptions
+const wsLink = new WebSocketLink({
+  uri: `wss://<YOUR_API_ENDPOINT>`,
+  options: {
+    reconnect: true,
+    connectionParams: {
+      Authorization: `Bearer ${<YOUR_AUTH_TOKEN>}`,
+    },
+  },
+});
+
+// Use the split function from the apollo-link library to decide which link to use
+// based on the operation type
+const link = split(
+  ({ query }) => {
+    const { kind, operation } = getMainDefinition(query);
+    return kind === 'OperationDefinition' && operation === 'subscription';
+  },
+  wsLink,
+  httpLink,
+);
+
+// Create the Apollo client instance
+const client = new ApolloClient({
+  link,
+  cache: new InMemoryCache(),
+});
+
+// Use the useQuery hook to fetch data from the GraphQL API
+const { loading, error, data } = useQuery(gql`
+  query GetBooks {
+    books {
+      title
+      author
+    }
+  }
+`);
+
+// Use the useMutation hook to mutate data in the GraphQL API
+const [createBook] = useMutation(gql`
+  mutation CreateBook($title: String!, $author: String!) {
+    createBook(title: $title, author: $author) {
+      title
+      author
+    }
+  }
+`);
+
+// Use the useSubscription hook to subscribe to real-time updates from the GraphQL API
+const { loading, error, data } = useSubscription(gql`
+  subscription BookAdded {
+    bookAdded {
+      title
+      author
+    }
+  }
+`);
+Note that you will need to replace <YOUR_API_ENDPOINT> and <YOUR_AUTH_TOKEN> with the appropriate values for your MongoDB Atlas GraphQL API.
