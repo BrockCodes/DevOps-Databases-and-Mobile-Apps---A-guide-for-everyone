@@ -1,0 +1,44 @@
+To connect an AWS S3 bucket to MongoDB App Services, you can follow these general steps:
+
+Create an AWS S3 bucket and obtain the access and secret keys for a user with appropriate permissions to access the bucket. You can do this by going to the AWS Management Console and navigating to the IAM (Identity and Access Management) service.
+
+In the MongoDB Atlas dashboard, navigate to your project and click “Database Access” in the left-hand sidebar. Create a new database user with the necessary permissions to access your database collections.
+
+Next, navigate to the “Clusters” tab in the left-hand sidebar and click on the cluster that you want to connect to your S3 bucket. In the “Clusters” tab, click on “Connect” and select “Connect your application”.
+
+From the “Choose your driver version” dialog box, select “Node.js” and click “Copy”.
+
+Create a new Node.js project or navigate to an existing Node.js project, and paste the connection string you just copied into your application code.
+
+Next, install the AWS SDK for Node.js by running the following command in your terminal or command prompt:
+'''
+npm install aws-sdk
+Once you have installed the AWS SDK, you can use it to connect to your S3 bucket from your Node.js application code. You can use the aws-sdk library to upload and download files to and from your S3 bucket.
+For example, to upload a file to your S3 bucket, you can use the following code:
+
+const AWS = require('aws-sdk');
+const fs = require('fs');
+
+const s3 = new AWS.S3({
+  accessKeyId: 'YOUR_ACCESS_KEY_ID',
+  secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
+});
+
+const fileContent = fs.readFileSync('PATH_TO_FILE');
+
+const params = {
+  Bucket: 'YOUR_BUCKET_NAME',
+  Key: 'FILE_NAME',
+  Body: fileContent,
+};
+
+s3.upload(params, function(err, data) {
+  if (err) {
+    throw err;
+  }
+  console.log(`File uploaded successfully. ${data.Location}`);
+});
+'''
+Note that you will need to replace YOUR_ACCESS_KEY_ID, YOUR_SECRET_ACCESS_KEY, YOUR_BUCKET_NAME, PATH_TO_FILE, and FILE_NAME with your own values.
+
+Once you have successfully connected your AWS S3 bucket to your MongoDB app services, you can use it to store and retrieve files and other data as needed.
