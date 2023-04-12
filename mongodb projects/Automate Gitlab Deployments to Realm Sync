@@ -1,0 +1,32 @@
+To connect GitLab to MongoDB Realm, you can use the GitLab CI/CD platform to automate the deployment of your code changes to Realm. Here are the general steps to set up the integration:
+
+Create a new GitLab account if you don’t already have one.
+
+Create a new GitLab repository for your MongoDB Realm app.
+
+Create a .gitlab-ci.yml file in the root directory of your GitLab repository. This file should contain the necessary build and deployment steps for your MongoDB Realm app. Here’s an example configuration file that deploys a Node.js application to MongoDB Realm:
+'''
+image: node:latest
+
+before_script:
+  - npm install -g @angular/cli
+  - npm install
+
+deploy:
+  stage: deploy
+  script:
+    - npm run build
+    - ssh -i <path-to-private-key> <your-ssh-user>@<your-ssh-host> "cd <path-to-app> && git pull && npm install && pm2 restart <app-name>"
+'''
+Add the necessary environment variables to your GitLab project by navigating to the “Settings” page and selecting the “CI/CD” tab. You’ll need to add the following variables:
+
+MONGODB_REALM_APP_ID: the ID of your MongoDB Realm app
+MONGODB_REALM_API_KEY: your MongoDB Realm API key
+MONGODB_REALM_APP_NAME: the name of your MongoDB Realm app
+You can find your app ID and API key in the “App Settings” tab of your MongoDB Realm project.
+
+Commit and push your .gitlab-ci.yml file to your GitLab repository.
+
+Trigger a pipeline in GitLab by pushing a new commit to your repository. GitLab will execute the build and deployment steps defined in your configuration file and deploy your app to MongoDB Realm.
+
+By following these steps, you can connect GitLab to MongoDB Realm and automate the deployment of your app changes to Realm.
