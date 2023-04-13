@@ -1,0 +1,70 @@
+To connect MongoDB Atlas to Azure Active Directory with privilege access levels using Functions, follow these steps:
+
+Create an Azure Function App: Create a new Function App in Azure Portal and add the necessary dependencies in the package.json file, such as mongodb, @azure/msal-node and jsonwebtoken.
+
+Configure Azure AD: Register your application in the Azure Active Directory and get the client_id, client_secret, tenant_id and audience values.
+
+Configure MongoDB Atlas: In the Atlas dashboard, create a new user with appropriate roles and permissions.
+
+Implement the Azure Function: In the Azure Function, add the code to authenticate with Azure AD using the @azure/msal-node package, generate a JWT token using the jsonwebtoken package, and connect to the MongoDB Atlas cluster using the mongodb package.
+
+Test the Function: Test the Azure Function by invoking it from a REST client or through the Function App console.
+
+Here’s an example of how to implement an Azure Function to connect to MongoDB Atlas with privilege access levels using Functions:
+'''
+const { MongoClient } = require('mongodb');
+const jwt = require('jsonwebtoken');
+const msal = require('@azure/msal-node');
+
+const mongoUri = 'mongodb+srv://<username>:<password>@<cluster-url>/test?retryWrites=true&w=majority';
+const authorityUrl = `https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token`;
+
+const config = {
+  auth: {
+    clientId: '<client-id>',
+    clientSecret: '<client-secret>',
+    authority: authorityUrl,
+  },
+  scopes: ['user.read'],
+};
+
+const getToken = async () => {
+  const cca = new msal.ConfidentialClientApplication(config);
+  const authResult = await cca.acquireTokenByClientCredential({
+    scopes: config.scopes,
+  });
+  const token = jwt.sign(
+    { aud: '<audience>' },
+    authResult.accessToken,
+    { expiresIn: '1h' },
+  );
+  return token;
+};
+
+const getDb = async () => {
+  const token = await getToken();
+  const client = await MongoClient.connect(mongoUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    ssl: true,
+    sslValidate: true,
+    sslCA: new Buffer.from(process.env.MONGODB_CA_CERT),
+    auth: { source: '$external', mechanism: 'MONGODB-X509' },
+    authMechanismProperties: {
+      SERVICE_NAME: '<service-name>',
+      CANONICALIZE_HOST_NAME: '<canonicalize-host-name>',
+    },
+  });
+  return client.db('<database-name>');
+};
+
+module.exports = async function (context, req) {
+  const db = await getDb();
+  const collection = db.collection('<collection-name>');
+  const results = await collection.find({}).toArray();
+  context.res = {
+    body: results,
+  };
+};
+'''
+This code uses the @azure/msal-node package to authenticate with Azure AD, generates a JWT token using the jsonwebtoken package, and connects to the MongoDB Atlas cluster using the mongodb package. It then retrieves data from a MongoDB Atlas collection and returns it in the HTTP response. You can modify the code to suit your specific use case.
