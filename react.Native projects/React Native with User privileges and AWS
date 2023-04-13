@@ -1,0 +1,320 @@
+Going to take this and go crazy, going to get into as much detail of how to do this as I can for you guys and gals. As there seems to be major confusion for role-based access using Realm, a lot of this has to be custom logic as none of it is organic to Realm itself.
+
+**Implementing user role-based authentication with MongoDB Realm, AWS IAM, and MongoDB Atlas involves a few steps:**
+
+1. Create a MongoDB Atlas account and set up a cluster.
+2. Configure AWS IAM roles and permissions.
+3. Set up MongoDB Realm and link it to the Atlas cluster.
+4. Define user roles in Realm and map them to AWS IAM roles.
+5. Secure your application with role-based access control (RBAC).
+
+All steps to implement user role-based authentication with MongoDB Realm, AWS IAM, and MongoDB Atlas:
+
+1. Create a MongoDB Atlas account and set up a cluster:
+   - Sign up for a MongoDB Atlas account and create a new cluster.
+   - Configure the security settings for your cluster, including IP access lists and SSL/TLS encryption.
+   - Create a database and define collections for your application.
+
+2. Configure AWS IAM roles and permissions:
+   - Create AWS IAM roles and policies that grant access to your MongoDB Atlas resources.
+   - Assign these roles to your application users and configure permissions based on their roles.
+
+3. Set up MongoDB Realm and link it to the Atlas cluster:
+   - Create a new Realm application and link it to your Atlas cluster.
+   - Configure the Realm app settings, including authentication providers, email templates, and custom domains.
+
+4. Define user roles in Realm and map them to AWS IAM roles:
+   - Create custom user roles in Realm that map to your application's business logic.
+   - Define permission sets for each role, including read, write, and execute permissions on collections and functions.
+   - Map Realm user roles to AWS IAM roles using Lambda functions.
+
+ **Expanding on this:**
+ To configure AWS IAM roles and permissions for MongoDB Atlas and Realm, follow these steps:
+
+4a. Log in to the AWS Management Console and navigate to the IAM dashboard.
+
+4b. Create an IAM role for your application users. This role will be used to grant access to your MongoDB Atlas resources. When creating the role, select the “AWS service” as the trusted entity and then choose “EC2” as the use case.
+
+4c. Attach the appropriate policies to your IAM role to grant permissions for the actions your users need to perform in MongoDB Atlas. For example, you may want to attach the AmazonEC2ReadOnlyAccess policy to allow read-only access to MongoDB Atlas resources.
+
+4d. Create a policy that grants access to your MongoDB Atlas cluster. The policy should include the following permissions:
+
+   ```
+   {
+       "Version": "2012-10-17",
+       "Statement": [
+           {
+               "Effect": "Allow",
+               "Action": [
+                   "ec2:DescribeInstances",
+                   "ec2:DescribeTags"
+               ],
+               "Resource": "*"
+           },
+           {
+               "Effect": "Allow",
+               "Action": [
+                   "ec2:CreateNetworkInterface",
+                   "ec2:DescribeNetworkInterfaces",
+                   "ec2:DeleteNetworkInterface"
+               ],
+               "Resource": "*"
+           },
+           {
+               "Effect": "Allow",
+               "Action": [
+                   "ec2:AuthorizeSecurityGroupIngress",
+                   "ec2:AuthorizeSecurityGroupEgress",
+                   "ec2:RevokeSecurityGroupIngress",
+                   "ec2:RevokeSecurityGroupEgress",
+                   "ec2:CreateSecurityGroup",
+                   "ec2:DescribeSecurityGroups",
+                   "ec2:DeleteSecurityGroup"
+               ],
+               "Resource": "*"
+           },
+           {
+               "Effect": "Allow",
+               "Action": [
+                   "ec2:AttachNetworkInterface",
+                   "ec2:DetachNetworkInterface"
+               ],
+               "Resource": "*"
+           },
+           {
+               "Effect": "Allow",
+               "Action": [
+                   "dynamodb:BatchGetItem",
+                   "dynamodb:GetItem",
+                   "dynamodb:Query",
+                   "dynamodb:Scan",
+                   "dynamodb:BatchWriteItem",
+                   "dynamodb:PutItem",
+                   "dynamodb:UpdateItem",
+                   "dynamodb:DeleteItem"
+               ],
+               "Resource": "*"
+           }
+       ]
+   }
+   ```
+
+4e Attach the policy to the IAM role you created in step 2.
+
+4f. Configure your MongoDB Atlas cluster to use IAM authentication. This requires you to create an IAM database user in MongoDB Atlas and configure the cluster to use IAM authentication.
+
+4g. Configure your Realm application to use IAM authentication by creating a new IAM provider and linking it to your AWS account. You will need to provide the AWS access key ID and secret access key to complete this step.
+
+4gi. To configure your Realm application to use IAM authentication with AWS, follow these steps:
+
+4gii. Log in to the MongoDB Realm console and select your project.
+4giii. In the left-hand navigation menu, select "Authentication Providers."
+4giv. Click the "Add a Provider" button and select "AWS IAM" from the dropdown menu.
+4gv. Enter a name for the provider and click "Create."
+4gvi. Enter your AWS access key ID and secret access key in the fields provided.
+4gvii. Select the AWS region where your IAM users are located.
+4gviii. Click "Save" to create the provider.
+
+4gu. Once you have created the IAM provider, you can link it to your AWS account by following these steps:
+
+4gua. In the AWS console, navigate to the IAM service and select "Users" from the left-hand menu.
+4gub. Select the user that you want to link to your Realm application.
+4guc. Click the "Add Permissions" button and select "Attach Existing Policies Directly."
+4gud. Search for and select the policy that you created for your Realm application.
+4gue. Click "Review" and then "Add Permissions" to attach the policy to the user.
+
+You can now assign IAM roles to your application users and configure permissions based on their roles using the policy that you created. When an application user logs in to your Realm application, they will be authenticated using their IAM credentials and their access to MongoDB Atlas resources will be determined by their assigned IAM role.
+
+4h. Configure your Realm application to use role-based access control by creating roles and assigning them to users. You can create custom roles and assign permissions based on the needs of your application.
+
+4i. Test your application to ensure that users are able to authenticate and access the appropriate resources based on their assigned roles.
+
+>To define user roles in Realm and map them to AWS IAM roles, you can follow these steps:
+
+>b1. Define custom user roles in Realm: 
+   Define user roles in Realm that align with your application's business logic. For example, you may define roles such as "admin", "manager", and "user". These roles can be created in the Realm UI or through the Realm SDK.
+
+
+```
+const myCustomRole = {
+  name: "customRole",
+  apply: {
+    read: true,
+    write: true,
+    execute: true,
+    schema: true
+  },
+  // Define permission sets for this role
+  // ...
+}
+
+Realm.App.Sync.refreshCustomData({ customUserData: { roles: [myCustomRole] } });
+```
+```
+const AWS = require('aws-sdk');
+AWS.config.update({accessKeyId: '<access_key>', secretAccessKey: '<secret_key>'});
+
+const iam = new AWS.IAM({apiVersion: '2010-05-08'});
+
+const params = {
+  AssumeRolePolicyDocument: JSON.stringify({
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {"Service": "lambda.amazonaws.com"},
+        "Action": "sts:AssumeRole"
+      }
+    ]
+  }),
+  RoleName: "myRole"
+};
+
+iam.createRole(params, function(err, data) {
+  if (err) {
+    console.log(err, err.stack);
+  } else {
+    console.log(data);
+  }
+});
+
+```
+
+>b2. Define permission sets for each role: 
+   Define permission sets for each role that include read, write, and execute permissions on collections and functions. You can set permissions for specific fields, query filters, and other criteria.
+
+```
+const myCustomRole = {
+  name: "customRole",
+  apply: {
+    read: true,
+    write: true,
+    execute: true,
+    schema: true
+  },
+  // Define permission sets for this role
+  permissions: [
+    {
+      resource: { type: 'Function', name: 'myFunction' },
+      actions: ['execute']
+    },
+    {
+      resource: { type: 'Collection', name: 'myCollection' },
+      actions: ['read', 'write']
+    }
+  ]
+}
+
+Realm.App.Sync.refreshCustomData({ customUserData: { roles: [myCustomRole] } });
+
+```
+
+>b3. Configure AWS IAM roles and policies: 
+   Create IAM roles and policies that grant access to your MongoDB Atlas resources. Assign permissions to these roles based on the user roles defined in Realm. For example, you may create an IAM role called "admin" and assign it permissions to perform all actions on the Atlas cluster. Similarly, you may create an IAM role called "user" and assign it permissions to read data from specific collections.
+
+>b4. Map Realm user roles to AWS IAM roles using Lambda functions: 
+   Use AWS Lambda functions to map Realm user roles to AWS IAM roles. When a user logs in to your application, Realm can invoke a Lambda function that retrieves the user's role from Realm and maps it to an IAM role. The IAM role is then used to grant the user access to the necessary resources.
+
+```
+exports.handler = function(event, context, callback) {
+  const AWS = require('aws-sdk');
+  const iam = new AWS.IAM();
+
+  const username = event.identity.username;
+
+  // Map Realm user roles to AWS IAM roles
+  let roleName = '';
+  switch (event.user.custom_data.role) {
+    case 'admin':
+      roleName = 'myAdminRole';
+      break;
+    case 'editor':
+      roleName = 'myEditorRole';
+      break;
+    case 'viewer':
+      roleName = 'myViewerRole';
+      break;
+    default:
+      roleName = 'myDefaultRole';
+  }
+
+  const params = {
+    RoleName: roleName,
+    PrincipalArn: `arn:aws:iam::${process.env.AWS_ACCOUNT_ID}:user/${username}`,
+    StatementId: `${roleName}-${username}`
+  };
+
+  iam.assumeRole(params, function(err, data) {
+    if (err) {
+      console.log(err, err.stack);
+      callback(err);
+    } else {
+      console.log(data);
+      const response = {
+        statusCode: 200,
+        body: JSON.stringify({ success: true })
+      };
+      callback(null, response);
+    }
+  });
+};
+
+```
+
+>Overall, the key is to align your user roles and permissions with your application's business logic and map them to IAM roles that provide the necessary level of access to your MongoDB Atlas resources.
+
+b5. Secure your application with role-based access control (RBAC):
+   - Implement RBAC in your application using Realm Sync and query-based sync rules.
+   - Configure access controls based on user roles and permissions to ensure that users can only access the data they need.
+
+Role-based access control (RBAC) is a method of controlling access to resources in a system based on the roles of individual users within the organization. In Realm Sync, you can implement RBAC using query-based sync rules, which are rules that are evaluated server-side to determine which documents should be synchronized to a client.
+
+To implement RBAC using query-based sync rules in Realm Sync, you would typically follow these steps:
+
+c1. Define roles and permissions: Define the roles that are available in your application, along with the permissions that each role should have. For example, you might have an "admin" role with read/write access to all documents, and a "user" role with read-only access to certain documents.
+
+c2. Assign roles to users: Assign each user in your application to one or more roles. This can be done programmatically or through an administrative interface.
+
+c3. Define sync rules: Define sync rules that allow users to only sync the documents they are authorized to access. For example, you might have a sync rule that only allows users with the "admin" role to sync all documents, while users with the "user" role can only sync documents that have a specific tag or attribute.
+
+Here's an example of how you might implement RBAC using query-based sync rules in Realm Sync:
+
+```
+// Define roles and permissions
+const roles = {
+  admin: { read: true, write: true },
+  user: { read: true, write: false }
+};
+
+// Assign roles to users
+const users = [
+  { username: 'user1', roles: ['user'] },
+  { username: 'user2', roles: ['admin', 'user'] }
+];
+
+// Define sync rules
+const syncConfig = {
+  user: currentUser,
+  partitionValue: 'myPartitionKey',
+  filter: (document) => {
+    const userRoles = users.find(u => u.username === currentUser)?.roles || [];
+    const documentRoles = document.roles || [];
+    return documentRoles.some(r => userRoles.includes(r));
+  }
+};
+
+// Open a Realm synced realm
+const realm = await Realm.open({
+  schema: [MySchema],
+  sync: syncConfig
+});
+
+// Query synced data
+const results = realm.objects('MyObject');
+```
+
+In this example, we define two roles ("admin" and "user") and assign them to two users. We then define a sync rule that filters documents based on their "roles" attribute and the roles assigned to the current user. Finally, we open a Realm synced realm and query data based on the sync rule.
+
+NOTE: this is just a simple example, and RBAC can be implemented in a more complex application using more sophisticated sync rules and query filters. Additionally, RBAC should be combined with other security measures such as authentication and encryption to ensure that your application is as secure as possible.
+
+Overall, this approach provides a powerful and flexible way to implement user role-based authentication with MongoDB Realm, AWS IAM, and MongoDB Atlas. By leveraging these tools and technologies, you can create a secure and scalable backend for your React Native application, with granular access controls that ensure that users can only access the data they need.
