@@ -1,0 +1,116 @@
+Here is an example of implementing JWT user login with role-based privileges in MongoDB Realm React Native SDK:
+
+1. First, set up a MongoDB Realm application and configure authentication providers.
+
+2. Create a new Realm app client in your React Native app, and initialize the Realm app:
+
+```javascript
+import Realm from 'realm';
+import { AppRegistry } from 'react-native';
+
+const appConfig = {
+  id: '<your-realm-app-id>',
+  timeout: 10000,
+};
+
+const app = new Realm.App(appConfig);
+
+AppRegistry.registerComponent('MyApp', () => App);
+```
+
+3. Create a function to handle user login with JWT:
+
+```javascript
+async function loginWithJWT(token) {
+  try {
+    const credentials = Realm.Credentials.jwt(token);
+    const user = await app.logIn(credentials);
+    return user;
+  } catch (err) {
+    console.error('Failed to log in', err);
+  }
+}
+```
+
+4. Create a function to retrieve a user's role from their JWT:
+
+```javascript
+function getUserRole(token) {
+  try {
+    const decodedToken = jwt.decode(token);
+    return decodedToken.role;
+  } catch (err) {
+    console.error('Failed to decode token', err);
+  }
+}
+```
+
+5. Create a function to check if a user has the necessary role to access a particular resource:
+
+```javascript
+function hasRole(userRole, requiredRole) {
+  const roles = {
+    admin: 3,
+    moderator: 2,
+    user: 1,
+  };
+
+  return roles[userRole] >= roles[requiredRole];
+}
+```
+
+6. Now, you can use these functions to implement role-based access control:
+
+```javascript
+async function viewUserRecords(token) {
+  const userRole = getUserRole(token);
+
+  if (!hasRole(userRole, 'admin')) {
+    throw new Error('Unauthorized');
+  }
+
+  const users = await realm.objects('User');
+  return users;
+}
+```
+
+This function checks if the user has an "admin" role and returns all user records if so. If the user does not have an "admin" role, an "Unauthorized" error is thrown.
+
+7. When a user logs in, you can retrieve their JWT and store it in the app's state:
+
+```javascript
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      userToken: null,
+      user: null,
+    };
+
+    this.handleLogin = this.handleLogin.bind(this);
+  }
+
+  async handleLogin() {
+    const token = await fetchTokenFromServer();
+    const user = await loginWithJWT(token);
+
+    this.setState({
+      userToken: token,
+      user,
+    });
+  }
+
+  render() {
+    return (
+      <View>
+        <Button title="Log in" onPress={this.handleLogin} />
+      </View>
+    );
+  }
+}
+```
+
+This example stores the user's JWT in the app's state after logging in.
+
+With these functions and example code, you can implement JWT user login with role-based access control in your MongoDB Realm React Native app.
