@@ -1,0 +1,30 @@
+To connect MongoDB Atlas GraphQL to an on-premise MongoDB cluster, you can follow these steps:
+
+Set up a VPN connection between the on-premise network and the Atlas VPC to enable network communication.
+Ensure that the on-premise cluster has a valid SSL certificate and is accessible from the Atlas VPC.
+Create a new MongoDB Atlas cluster in the same region as the GraphQL service.
+Enable VPC peering between the new Atlas cluster and the Atlas VPC.
+Set up a Data Source for the on-premise cluster in the new Atlas cluster.
+Create a GraphQL schema that defines the data that will be exposed from the on-premise cluster through the GraphQL service.
+Use the @mongoDataSource directive to define which data source should be used for each GraphQL resolver.
+Deploy the GraphQL service to a public endpoint using a service like AWS Lambda or Google Cloud Functions.
+Here is an example GraphQL schema with the @mongoDataSource directive:
+'''
+type User @mongoDataSource(clusterName: "on-premise-cluster") {
+  _id: ObjectId!
+  name: String!
+  email: String!
+}
+
+type Query {
+  getUserById(id: ObjectId!): User
+  getUsersByName(name: String!): [User]
+}
+
+type Mutation {
+  addUser(name: String!, email: String!): User
+  updateUser(id: ObjectId!, name: String!, email: String!): User
+  deleteUser(id: ObjectId!): User
+}
+'''
+Note that this is just an example and you will need to customize it according to your on-premise MongoDB cluster’s data model and access patterns.
