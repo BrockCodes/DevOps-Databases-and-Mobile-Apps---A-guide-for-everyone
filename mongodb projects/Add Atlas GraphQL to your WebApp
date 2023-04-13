@@ -1,0 +1,135 @@
+OVERVIEW
+
+To connect MongoDB Atlas GraphQL to your web app, you can follow these steps:
+
+Create a GraphQL schema for your app. This will define the types of data that your app will use and how they are related. You can use tools like Apollo Studio to help you create and manage your schema.
+
+Set up a MongoDB Atlas cluster and create a database that will store the data for your app.
+
+Enable GraphQL API access in your Atlas cluster. This will allow you to use the GraphQL API to query and mutate data in your Atlas database.
+
+Use a GraphQL client library, such as Apollo Client, to connect to your Atlas GraphQL API from your web app. This library will allow you to perform GraphQL queries and mutations from your app.
+
+Write your app code to use the GraphQL client library to communicate with your Atlas GraphQL API. You can use the Apollo Client library to handle state management and data fetching in your app.
+
+Test your app to make sure that it is able to query and mutate data in your Atlas database through the GraphQL API.
+
+NOW how do we do this? See Below:
+
+Connect a React web app to a MongoDB Atlas GraphQL API using Apollo Client:
+
+To connect a React web app to a MongoDB Atlas GraphQL API using Apollo Client, you need to follow these steps:
+
+Install the required packages:
+
+npm install apollo-boost react-apollo graphql-tag graphql --save
+Set up the Apollo client with the GraphQL endpoint:
+'''
+import ApolloClient from 'apollo-boost';
+
+const client = new ApolloClient({
+  uri: 'https://your-graphql-api-endpoint',
+});
+Wrap your root component with the ApolloProvider and pass the Apollo client instance:
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { ApolloProvider } from 'react-apollo';
+
+import App from './App';
+import client from './apolloClient';
+
+ReactDOM.render(
+  <ApolloProvider client={client}>
+    <App />
+  </ApolloProvider>,
+  document.getElementById('root')
+);
+'''
+Define your GraphQL queries and mutations using the gql tag from graphql-tag:
+
+'''
+import gql from 'graphql-tag';
+
+export const GET_BOOKS = gql`
+  query {
+    books {
+      id
+      title
+      author
+    }
+  }
+`;
+
+export const ADD_BOOK = gql`
+  mutation addBook($title: String!, $author: String!) {
+    addBook(title: $title, author: $author) {
+      id
+      title
+      author
+    }
+  }
+`;
+'''
+Use the Query and Mutation components from react-apollo to fetch data and perform mutations:
+
+''''
+import React from 'react';
+import { Query, Mutation } from 'react-apollo';
+import { GET_BOOKS, ADD_BOOK } from './queries';
+
+function App() {
+  return (
+    <div>
+      <Query query={GET_BOOKS}>
+        {({ loading, error, data }) => {
+          if (loading) return <p>Loading...</p>;
+          if (error) return <p>Error :(</p>;
+
+          return data.books.map(({ id, title, author }) => (
+            <div key={id}>
+              <p>Title: {title}</p>
+              <p>Author: {author}</p>
+            </div>
+          ));
+        }}
+      </Query>
+
+      <Mutation
+        mutation={ADD_BOOK}
+        update={(cache, { data: { addBook } }) => {
+          const { books } = cache.readQuery({ query: GET_BOOKS });
+          cache.writeQuery({
+            query: GET_BOOKS,
+            data: { books: books.concat([addBook]) },
+          });
+        }}
+      >
+        {(addBook, { loading, error }) => (
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              addBook({
+                variables: {
+                  title: e.target.title.value,
+                  author: e.target.author.value,
+                },
+              });
+              e.target.title.value = '';
+              e.target.author.value = '';
+            }}
+          >
+            <input name="title" />
+            <input name="author" />
+            <button type="submit">Add Book</button>
+            {loading && <p>Loading...</p>}
+            {error && <p>Error :( Please try again</p>}
+          </form>
+        )}
+      </Mutation>
+    </div>
+  );
+}
+export default App;
+'''
+In the example above, the Query component is used to fetch data using the GET_BOOKS query, and the Mutation component is used to perform a mutation using the ADD_BOOK mutation. The update function is used to update the fields as they change.
