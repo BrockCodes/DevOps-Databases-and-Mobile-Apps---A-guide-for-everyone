@@ -76,13 +76,13 @@ The above example shows how to train an ML.NET model using an existing dataset. 
 Here are some steps you can take to train an ML.NET model:
 
 1. Collect more data: The first step is to collect more data that you can use to train your model. This could be in the form of more text data that you want to use to improve the model's performance.
-```
+```csharp
 List<TextData> newData = new List<TextData>();
 // add new text data to newData list
 ```
 
 2. Clean and preprocess the data: Once you have collected the data, you will need to clean and preprocess it to ensure that it is ready for training. This might involve removing any unwanted characters or words, converting the text to lowercase, and tokenizing the text.
-```
+```csharp
 var pipeline = mlContext.Transforms.Text
     .NormalizeText("Text", "NormalizedText", keepDiacritics: false, keepPunctuations: false, keepNumbers: true)
     .Append(mlContext.Transforms.Text.TokenizeIntoWords("Tokens", "NormalizedText"))
@@ -93,21 +93,21 @@ var preprocessedData = pipeline.Fit(newDataView).Transform(newDataView);
 ```
 
 3. Split the data into training and testing sets: Next, you will need to split your data into training and testing sets. The training set is used to train the model, while the testing set is used to evaluate its performance.
-```
+```csharp
 var trainTestData = mlContext.Data.TrainTestSplit(preprocessedData, testFraction: 0.3);
 var trainData = trainTestData.TrainSet;
 var testData = trainTestData.TestSet;
 ```
 
 4. Train the model: Once you have preprocessed your data and split it into training and testing sets, you can train the model using the ML.NET API. This involves selecting an appropriate algorithm, setting any necessary hyperparameters, and specifying the training data.
-```
+```csharp
 var predictions = trainedModel.Transform(testData);
 var metrics = mlContext.BinaryClassification.Evaluate(predictions);
 Console.WriteLine($"Accuracy: {metrics.Accuracy}");
 ```
 
 5. Evaluate the model: Once the model has been trained, you can evaluate its performance using the testing set. This will give you an idea of how well the model is likely to perform on new data.
-```
+```csharp
 var predictions = trainedModel.Transform(testData);
 var metrics = mlContext.BinaryClassification.Evaluate(predictions);
 Console.WriteLine($"Accuracy: {metrics.Accuracy}");
@@ -116,7 +116,7 @@ Console.WriteLine($"Accuracy: {metrics.Accuracy}");
 6. Refine the model: Depending on the results of the evaluation, you may need to refine the model further. This could involve collecting more data, selecting a different algorithm, or adjusting the hyperparameters.
 
 7. Deploy the model: Once you are happy with the performance of your model, you can deploy it and use it to make predictions on new data.
-```
+```csharp
 var modelPath = Path.Combine(Environment.CurrentDirectory, "model.zip");
 mlContext.Model.Save(trainedModel, trainData.Schema, modelPath);
 // use the model to make predictions on new data
