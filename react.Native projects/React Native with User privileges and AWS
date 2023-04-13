@@ -282,14 +282,16 @@ Here's an example of how you might implement RBAC using query-based sync rules i
 ```
 // Define roles and permissions
 const roles = {
-  admin: { read: true, write: true },
-  user: { read: true, write: false }
+  admin: { read: true, write: true, execute: true },
+  editor: { read: true, write: true, execute: false }
+  viewer: { read: true, write: false, execute: false }
 };
 
 // Assign roles to users
 const users = [
-  { username: 'user1', roles: ['user'] },
-  { username: 'user2', roles: ['admin', 'user'] }
+  { username: 'user1', roles: ['viewer'] },
+  { username: 'user2', roles: ['viewer', 'editor'] },
+  { username: 'user3', roles: ['viewer', 'editor','admin'] }
 ];
 
 // Define sync rules
@@ -313,7 +315,7 @@ const realm = await Realm.open({
 const results = realm.objects('MyObject');
 ```
 
-In this example, we define two roles ("admin" and "user") and assign them to two users. We then define a sync rule that filters documents based on their "roles" attribute and the roles assigned to the current user. Finally, we open a Realm synced realm and query data based on the sync rule.
+In this example, we define three roles to fit the rest of the code ("viewer", "editor", and "admin") and assign them to three. We then define a sync rule that filters documents based on their "roles" attribute and the roles assigned to the current user. Finally, we open a Realm synced realm and query data based on the sync rule.
 
 NOTE: this is just a simple example, and RBAC can be implemented in a more complex application using more sophisticated sync rules and query filters. Additionally, RBAC should be combined with other security measures such as authentication and encryption to ensure that your application is as secure as possible.
 
