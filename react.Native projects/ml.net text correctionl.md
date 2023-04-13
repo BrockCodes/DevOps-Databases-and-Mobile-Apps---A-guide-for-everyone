@@ -4,7 +4,7 @@ You can use ML.NET to build a text correction model that can be used for paraphr
 
 2. Install ML.NET: You can install ML.NET using NuGet package manager in Visual Studio.
 
-3. Define your model: In this case, you'll use a transformer-based model for text generation. You can use GPT-2 or BERT models available in ML.NET.
+3. Define your model: In this case, you'll use a transformer-based model for text generation. You can use GPT-3 or BERT models available in ML.NET.
 
 4. Train your model: You'll need to split your dataset into training and validation sets. You can then train your model on the training set and evaluate it on the validation set. You can use techniques like data augmentation and transfer learning to improve the performance of your model.
 
